@@ -1,0 +1,13 @@
+# Compilação e Binários
+*.exe
+*.o
+*.obj
+*.out
+
+# Pastas de configuração e cache do VS Code
+.vscode/
+.vs/
+
+# Arquivos temporários e logs
+*.log
+*.tmp
