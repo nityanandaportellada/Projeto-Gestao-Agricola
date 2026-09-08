@@ -11,3 +11,6 @@
 # Arquivos temporários e logs
 *.log
 *.tmp
+
+# Arquivos compactados
+*.zip
