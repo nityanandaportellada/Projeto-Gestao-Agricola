@@ -1,3 +1,4 @@
+//Modulo de cabecalho responsavel por definir as estruturas de pragas e ocorrencias e disponibilizar as funcoes utilizadas pelo modulo
 #ifndef PRAGAS_H
 #define PRAGAS_H
 #include <sqlite3.h>

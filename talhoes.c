@@ -1,3 +1,4 @@
+//Modulo responsavel pelo cadastro, consulta, edicao e exclusao dos talhoes da fazenda
 #include <stdio.h>
 #include <string.h>
 #include <sqlite3.h>
@@ -16,6 +17,7 @@ void cadastrarTalhao(sqlite3 *db) {
 
     sqlite3_stmt *stmt;
 
+    //Define o comando SQL utilizado para inserir um novo talhao no banco de dados
     const char *sql =
         "INSERT INTO talhoes "
         "(codigo, nome, area, plantacao, localizacao) "
@@ -27,6 +29,7 @@ void cadastrarTalhao(sqlite3 *db) {
 
     printf("Digite o codigo do talhao: ");
 
+    //Valida se o codigo informado pelo usuario e um numero inteiro
     if (scanf("%d", &codigo) != 1) {
         printf("\nDigite somente numeros.\n");
 
@@ -44,6 +47,7 @@ void cadastrarTalhao(sqlite3 *db) {
         return;
     }
 
+    //Associa o codigo informado ao parametro utilizado na consulta
     sqlite3_bind_int(stmt, 1, codigo);
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -59,6 +63,7 @@ void cadastrarTalhao(sqlite3 *db) {
     printf("Digite o nome do talhao: ");
     fgets(nome, 50, stdin);
 
+    //Remove a quebra de linha armazenada pelo fgets
     nome[strcspn(nome, "\n")] = '\0';
 
     printf("Digite a area do talhao em hectares: ");
@@ -70,6 +75,7 @@ void cadastrarTalhao(sqlite3 *db) {
         return;
     }
 
+    //Impede o cadastro de talhoes com area igual ou inferior a zero
     if (area <= 0) {
         printf("\nArea do talhao invalida.\n");
         printf("A area deve ser maior que zero.\n");
@@ -95,6 +101,7 @@ void cadastrarTalhao(sqlite3 *db) {
         return;
     }
    
+    //Associa os dados informados aos parametros do comando INSERT
     sqlite3_bind_int(stmt, 1, codigo);
     sqlite3_bind_text(stmt, 2, nome, -1, SQLITE_TRANSIENT);
     sqlite3_bind_double(stmt, 3, area);
@@ -111,6 +118,7 @@ void cadastrarTalhao(sqlite3 *db) {
         printf("Mensagem: %s\n", sqlite3_errmsg(db));
     }
 
+    //Libera o comando preparado depois da execucao
     sqlite3_finalize(stmt);
 }
 
@@ -119,6 +127,7 @@ void cadastrarTalhao(sqlite3 *db) {
 void listarTalhoes(sqlite3 *db) {
     sqlite3_stmt *stmt;
 
+    //Seleciona todos os talhoes cadastrados e organiza os resultados pelo codigo
     const char *sql =
         "SELECT codigo, nome, area, plantacao, localizacao "
         "FROM talhoes "
@@ -133,8 +142,10 @@ void listarTalhoes(sqlite3 *db) {
     printf("          TALHOES CADASTRADOS\n");
     printf("====================================\n");
 
+    //Controla se pelo menos um talhao foi encontrado durante a consulta
     int encontrou = 0;
 
+    //Percorre todos os registros retornados pelo banco
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         encontrou = 1;
@@ -160,6 +171,7 @@ void listarTalhoes(sqlite3 *db) {
 int buscarTalhao(sqlite3 *db, int codigo) {
     sqlite3_stmt *stmt;
 
+    //Consulta se existe um talhao com o codigo recebido pela funcao
     const char *sql =
         "SELECT codigo "
         "FROM talhoes "
@@ -171,6 +183,7 @@ int buscarTalhao(sqlite3 *db, int codigo) {
 
     sqlite3_bind_int(stmt, 1, codigo);
 
+    //Retorna 1 quando o talhao for encontrado
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         sqlite3_finalize(stmt);
         return 1;
@@ -178,6 +191,7 @@ int buscarTalhao(sqlite3 *db, int codigo) {
 
     sqlite3_finalize(stmt);
 
+    //Retorna -1 quando nenhum talhao com o codigo informado for encontrado
     return -1;
 }
 
@@ -206,6 +220,7 @@ void editarTalhao(sqlite3 *db) {
         return;
     }
 
+    //Verifica se o talhao informado existe antes de continuar com a edicao
     codigoEncontrado = buscarTalhao(db, codigo);
 
     if (codigoEncontrado == -1) {
@@ -247,6 +262,7 @@ void editarTalhao(sqlite3 *db) {
 
     localizacao[strcspn(localizacao, "\n")] = '\0';
 
+    //Define o comando SQL responsavel por atualizar os dados do talhao selecionado
     const char *sql =
         "UPDATE talhoes "
         "SET nome = ?, "
@@ -261,6 +277,7 @@ void editarTalhao(sqlite3 *db) {
         return;
     }
 
+    //Associa os novos dados e o codigo do talhao aos parametros do comando UPDATE
     sqlite3_bind_text(stmt, 1, nome, -1, SQLITE_TRANSIENT);
     sqlite3_bind_double(stmt, 2, area);
     sqlite3_bind_text(stmt, 3, plantacao, -1, SQLITE_TRANSIENT);
@@ -300,11 +317,13 @@ void excluirTalhao(sqlite3 *db)
         return;
     }
 
+    //Confirma se o talhao existe antes de solicitar sua exclusao
     if (buscarTalhao(db, codigo) == -1) {
         printf("\nTalhao nao encontrado.\n");
         return;
     }
 
+    //Solicita confirmacao para evitar a exclusao acidental de um talhao
     printf("Deseja realmente excluir este talhao? (S/N): ");
     scanf(" %c", &confirmacao);
 
@@ -313,6 +332,7 @@ void excluirTalhao(sqlite3 *db)
         return;
     }
 
+    //Define o comando SQL responsavel por excluir o talhao selecionado
     const char *sql =
         "DELETE FROM talhoes "
         "WHERE codigo = ?;";
@@ -324,6 +344,7 @@ void excluirTalhao(sqlite3 *db)
 
     sqlite3_bind_int(stmt, 1, codigo);
 
+    //A exclusao pode ser impedida quando existirem ocorrencias ou registros climaticos relacionados ao talhao
     if (sqlite3_step(stmt) == SQLITE_DONE) {
         printf("\nTalhao excluido com sucesso!\n");
     }

@@ -4,6 +4,7 @@
 
 #include <sqlite3.h>
 
+//Declara a funcao responsavel por inicializar e criar as tabelas utilizadas pelo sistema
 int inicializarBanco(sqlite3 *db);
 
 #endif

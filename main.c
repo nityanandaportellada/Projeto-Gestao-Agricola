@@ -1,3 +1,4 @@
+//Modulo principal responsavel por iniciar o sistema, abrir o banco de dados, apresentar o menu principal e direcionar o usuario para os demais modulos
 #include <stdio.h>
 #include <stdlib.h>
 #include <sqlite3.h>
@@ -22,6 +23,7 @@ int main()
 
     resultado = sqlite3_open("agricola.db", &db);
 
+    //Verifica se o banco de dados foi aberto corretamente antes de continuar a execucao do sistema
     if (resultado != SQLITE_OK) {
         printf("\nErro ao abrir o banco de dados.\n");
         sqlite3_close(db);
@@ -58,14 +60,17 @@ int main()
 
         printf("\nEscolha uma opcao: ");
 
+        //Valida se a opcao informada pelo usuario e um numero antes de processar o menu
         if (scanf("%d", &opcao) != 1) {
             printf("\nDigite somente numeros.\n");
 
+            //Limpa os caracteres restantes da entrada invalida antes de apresentar novamente o menu
             while (getchar() != '\n');
 
             continue;
         }
 
+        //Direciona a opcao selecionada para a funcao ou submenu correspondente
         switch (opcao) {
 
             case 1:

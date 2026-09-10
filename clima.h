@@ -1,3 +1,5 @@
+//Modulo de cabecalho responsavel por definir a estrutura de registro climatico e disponibilizar as funcoes utilizadas pelo modulo de clima
+
 #ifndef CLIMA_H
 #define CLIMA_H
 
@@ -11,6 +13,7 @@ typedef struct {
     char hora[7];
 } RegistroClima;
 
+//declara as funções utilizadas
 void registrarClima(sqlite3 *db);
 void listarHistoricoClima(sqlite3 *db);
 void visualizarSerieTalhao(sqlite3 *db);

@@ -1,0 +1,186 @@
+============================================
+          RELATORIO GERAL DA FAZENDA
+============================================
+
+============== TALHOES ==============
+
+Codigo: 1
+Nome: Lote 1
+Area: 25.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 2
+Nome: Lote 2
+Area: 25.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 3
+Nome: Lote 3
+Area: 50.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 4
+Nome: Lote 4
+Area: 25.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 5
+Nome: Lote 5
+Area: 25.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 6
+Nome: Lote 6
+Area: 75.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 7
+Nome: Lote 7
+Area: 75.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 8
+Nome: Lote 8
+Area: 10.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 9
+Nome: Lote 9
+Area: 30.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 10
+Nome: Lote 10
+Area: 6.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 11
+Nome: Lote 11
+Area: 250.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 12
+Nome: Lote 12
+Area: 35.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+Codigo: 13
+Nome: Lote 13
+Area: 2.00 ha
+Plantacao: Arroz
+Localizacao: Iguape
+--------------------------------------------
+Codigo: 14
+Nome: Lote 14
+Area: 4.00 ha
+Plantacao: Cafe
+Localizacao: Iguape
+--------------------------------------------
+Codigo: 15
+Nome: Lote 15
+Area: 12.00 ha
+Plantacao: Cafe
+Localizacao: Iguape
+--------------------------------------------
+Codigo: 16
+Nome: Lote 16
+Area: 55.00 ha
+Plantacao: Arroz
+Localizacao: ilha Comprida
+--------------------------------------------
+
+============== CLIMA ==============
+
+Talhao: Lote 2
+Data: 07/09/2026
+Hora: 09:00
+Temperatura: 30.0 C
+Umidade: 50.0%
+--------------------------------------------
+Talhao: Lote 1
+Data: 07/09/2026
+Hora: 10:00
+Temperatura: 40.0 C
+Umidade: 25.0%
+--------------------------------------------
+Talhao: Lote 2
+Data: 07/09/2026
+Hora: 14:00
+Temperatura: 36.0 C
+Umidade: 70.0%
+--------------------------------------------
+Talhao: Lote 4
+Data: 09/09/2026
+Hora: 10:00
+Temperatura: 35.0 C
+Umidade: 80.0%
+--------------------------------------------
+Talhao: Lote 5
+Data: 09/09/2026
+Hora: 10:00
+Temperatura: 30.0 C
+Umidade: 45.0%
+--------------------------------------------
+Talhao: Lote 10
+Data: 10/09/2026
+Hora: 09:00
+Temperatura: 40.0 C
+Umidade: 35.0%
+--------------------------------------------
+Talhao: Lote 5
+Data: 10/09/2026
+Hora: 10:00
+Temperatura: 32.0 C
+Umidade: 50.0%
+--------------------------------------------
+
+============== PRAGAS ==============
+
+Talhao: Lote 1
+Praga: Broca-do-Colmo
+Nivel de infestacao: 3
+Area afetada: 10.00 hectares
+Data: 05/09/2026
+--------------------------------------------
+Talhao: Lote 7
+Praga: Lagarta-da-folha
+Nivel de infestacao: 2
+Area afetada: 5.00 hectares
+Data: 06/09/2026
+--------------------------------------------
+Talhao: Lote 12
+Praga: Lesma e Caracois
+Nivel de infestacao: 5
+Area afetada: 10.00 hectares
+Data: 07/09/2026
+--------------------------------------------
+Talhao: Lote 16
+Praga: Lesma e Caracois
+Nivel de infestacao: 5
+Area afetada: 20.00 hectares
+Data: 09/09/2026
+--------------------------------------------
+Talhao: Lote 7
+Praga: Acaro
+Nivel de infestacao: 2
+Area afetada: 10.00 hectares
+Data: 10/09/2026
+--------------------------------------------
+Talhao: Lote 10
+Praga: Percevejo-do-colmo
+Nivel de infestacao: 3
+Area afetada: 5.00 hectares
+Data: 10/09/2026
+--------------------------------------------

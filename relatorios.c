@@ -1,3 +1,4 @@
+//Modulo responsavel pela geracao de relatorios, consultas por periodo e leitura e escrita dos dados do sistema em arquivos CSV e TXT
 #include <stdio.h>
 #include <sqlite3.h>
 #include "relatorios.h"
@@ -7,6 +8,7 @@
 void gerarRelatorioClima(sqlite3 *db){
     sqlite3_stmt *stmt;
 
+    //Consulta os registros climaticos juntamente com o nome do talhao e reorganiza a data para realizar a ordenacao cronologica
     const char *sql =
         "SELECT t.nome, c.data, c.hora, "
         "c.temperatura, c.umidade "
@@ -28,6 +30,7 @@ void gerarRelatorioClima(sqlite3 *db){
     printf("          RELATORIO DE CLIMA\n");
     printf("====================================\n");
 
+    //Percorre todos os registros climaticos encontrados pela consulta
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         printf("\n-----------------------------\n");
@@ -48,6 +51,7 @@ void gerarRelatorioClima(sqlite3 *db){
 void gerarRelatorioPragasClima(sqlite3 *db){
     sqlite3_stmt *stmt;
 
+    //Relaciona ocorrencias, pragas, talhoes e os dados climaticos registrados na mesma data da ocorrencia
     const char *sql =
         "SELECT t.nome, "
         "p.nome, "
@@ -83,6 +87,7 @@ void gerarRelatorioPragasClima(sqlite3 *db){
     printf("       RELATORIO DE PRAGAS E CLIMA\n");
     printf("====================================\n");
 
+    //Percorre todas as ocorrencias encontradas e apresenta os dados das pragas e do clima relacionado
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         printf("\n-----------------------------\n");
@@ -92,6 +97,7 @@ void gerarRelatorioPragasClima(sqlite3 *db){
         printf("Area afetada: %.2f hectares\n", sqlite3_column_double(stmt, 3));
         printf("Data da ocorrencia: %s\n", sqlite3_column_text(stmt, 4));
 
+        //Verifica se existe registro climatico associado a data da ocorrencia antes de apresentar esses dados
         if (sqlite3_column_text(stmt, 5) != NULL) {
 
             printf("Temperatura: %.1f C\n",
@@ -123,6 +129,7 @@ void resumoPorPeriodo(sqlite3 *db){
 
     sqlite3_stmt *stmt;
 
+    //Calcula quantidade, medias e temperaturas maxima e minima somente para os registros existentes dentro do periodo informado
     const char *sql =
         "SELECT COUNT(*), "
         "AVG(temperatura), "
@@ -162,10 +169,12 @@ void resumoPorPeriodo(sqlite3 *db){
         return;
     }
 
+    //Associa a data inicial aos tres parametros utilizados para converter dia, mes e ano na consulta SQL
     sqlite3_bind_text(stmt, 1, dataInicio, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, dataInicio, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 3, dataInicio, -1, SQLITE_TRANSIENT);
 
+    //Associa a data final aos tres parametros utilizados para converter dia, mes e ano na consulta SQL
     sqlite3_bind_text(stmt, 4, dataFim, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 5, dataFim, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 6, dataFim, -1, SQLITE_TRANSIENT);
@@ -198,6 +207,7 @@ void exportarTalhoesCSV(sqlite3 *db)
     sqlite3_stmt *stmt;
 
     //Exportacao dos talhoes
+    //APS 2 - Abre o arquivo talhoes.csv no modo de escrita para armazenar os dados dos talhoes
     arquivo = fopen("talhoes.csv", "w");
 
     if (arquivo == NULL) {
@@ -205,6 +215,7 @@ void exportarTalhoesCSV(sqlite3 *db)
         return;
     }
 
+    //APS 2 - Utiliza fprintf para escrever o cabecalho do arquivo CSV
     fprintf(arquivo, "Codigo;Nome;Area;Plantacao;Localizacao\n");
 
     const char *sqlTalhoes =
@@ -218,6 +229,7 @@ void exportarTalhoesCSV(sqlite3 *db)
         return;
     }
 
+    //APS 2 - Percorre os dados recuperados do banco e grava cada registro no arquivo utilizando fprintf
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         fprintf(arquivo, "%d;%s;%.2f;%s;%s\n",
@@ -232,6 +244,7 @@ void exportarTalhoesCSV(sqlite3 *db)
     fclose(arquivo);
 
     //Exportacao dos dados climaticos
+    //APS 2 - Abre o arquivo clima.csv no modo de escrita para armazenar os registros climaticos
     arquivo = fopen("clima.csv", "w");
 
     if (arquivo == NULL) {
@@ -258,6 +271,8 @@ void exportarTalhoesCSV(sqlite3 *db)
         return;
     }
 
+
+    //APS 2 - Grava cada registro climatico recuperado do banco no arquivo clima.csv
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         fprintf(
@@ -277,6 +292,7 @@ void exportarTalhoesCSV(sqlite3 *db)
     fclose(arquivo);
 
     //Exportacao das pragas cadastradas
+    //APS 2 - Abre o arquivo pragas.csv no modo de escrita para armazenar as pragas cadastradas
     arquivo = fopen("pragas.csv", "w");
 
     if (arquivo == NULL) {
@@ -300,6 +316,7 @@ void exportarTalhoesCSV(sqlite3 *db)
         return;
     }
 
+    //APS 2 - Grava cada praga recuperada do banco no arquivo pragas.csv
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         fprintf(
@@ -316,6 +333,7 @@ void exportarTalhoesCSV(sqlite3 *db)
     fclose(arquivo);
 
     //Exportacao das ocorrencias de pragas
+    //APS 2 - Abre o arquivo ocorrencias_pragas.csv no modo de escrita para armazenar as ocorrencias cadastradas
     arquivo = fopen("ocorrencias_pragas.csv", "w");
 
     if (arquivo == NULL) {
@@ -328,6 +346,7 @@ void exportarTalhoesCSV(sqlite3 *db)
         "Codigo;Codigo Praga;Praga;Codigo Talhao;Talhao;Nivel Infestacao;Area Afetada;Data\n"
     );
 
+    //Relaciona ocorrencias, pragas e talhoes para exportar os dados completos de cada ocorrencia
     const char *sqlOcorrencias =
         "SELECT o.codigo, o.codigo_praga, p.nome, "
         "o.codigo_talhao, t.nome, o.nivel_infestacao, "
@@ -345,6 +364,7 @@ void exportarTalhoesCSV(sqlite3 *db)
         return;
     }
 
+    //APS 2 - Grava cada ocorrencia de praga recuperada do banco no arquivo ocorrencias_pragas.csv
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         fprintf(
@@ -378,6 +398,7 @@ void lerTalhoesCSV()
     FILE *arquivo;
     char linha[500];
 
+    //APS 2 - Abre o arquivo talhoes.csv no modo de leitura para recuperar as informacoes armazenadas
     arquivo = fopen("talhoes.csv", "r");
 
     if (arquivo == NULL) {
@@ -388,6 +409,7 @@ void lerTalhoesCSV()
         printf("              TALHOES\n");
         printf("====================================\n");
 
+        //APS 2 - Utiliza fgets para ler cada linha do arquivo ate chegar ao final
         while (fgets(linha, sizeof(linha), arquivo) != NULL) {
             printf("%s", linha);
         }
@@ -395,6 +417,7 @@ void lerTalhoesCSV()
         fclose(arquivo);
     }
 
+    //APS 2 - Abre o arquivo clima.csv no modo de leitura
     arquivo = fopen("clima.csv", "r");
 
     if (arquivo == NULL) {
@@ -405,6 +428,7 @@ void lerTalhoesCSV()
         printf("               CLIMA\n");
         printf("====================================\n");
 
+        //APS 2 - Le sequencialmente todas as linhas armazenadas no arquivo clima.csv
         while (fgets(linha, sizeof(linha), arquivo) != NULL) {
             printf("%s", linha);
         }
@@ -412,6 +436,7 @@ void lerTalhoesCSV()
         fclose(arquivo);
     }
 
+    //APS 2 - Abre o arquivo pragas.csv no modo de leitura
     arquivo = fopen("pragas.csv", "r");
 
     if (arquivo == NULL) {
@@ -422,6 +447,7 @@ void lerTalhoesCSV()
         printf("              PRAGAS\n");
         printf("====================================\n");
 
+        //APS 2 - Le sequencialmente todas as linhas armazenadas no arquivo pragas.csv
         while (fgets(linha, sizeof(linha), arquivo) != NULL) {
             printf("%s", linha);
         }
@@ -429,6 +455,7 @@ void lerTalhoesCSV()
         fclose(arquivo);
     }
 
+    //APS 2 - Abre o arquivo ocorrencias_pragas.csv no modo de leitura
     arquivo = fopen("ocorrencias_pragas.csv", "r");
 
     if (arquivo == NULL) {
@@ -439,6 +466,7 @@ void lerTalhoesCSV()
         printf("       OCORRENCIAS DE PRAGAS\n");
         printf("====================================\n");
 
+        //APS 2 - Le sequencialmente todas as linhas armazenadas no arquivo ocorrencias_pragas.csv
         while (fgets(linha, sizeof(linha), arquivo) != NULL) {
             printf("%s", linha);
         }
@@ -453,6 +481,7 @@ void exportarRelatorioTXT(sqlite3 *db)
     FILE *arquivo;
     sqlite3_stmt *stmt;
 
+    //APS 2 - Abre o arquivo relatorio_fazenda.txt no modo de escrita para armazenar o relatorio geral
     arquivo = fopen("relatorio_fazenda.txt", "w");
 
     if (arquivo == NULL) {
@@ -460,6 +489,7 @@ void exportarRelatorioTXT(sqlite3 *db)
         return;
     }
 
+    //APS 2 - Utiliza fprintf para escrever o conteudo do relatorio diretamente no arquivo TXT
     fprintf(arquivo, "============================================\n");
     fprintf(arquivo, "          RELATORIO GERAL DA FAZENDA\n");
     fprintf(arquivo, "============================================\n\n");
@@ -473,6 +503,7 @@ void exportarRelatorioTXT(sqlite3 *db)
 
     if (sqlite3_prepare_v2(db, sqlTalhoes, -1, &stmt, NULL) == SQLITE_OK) {
 
+        //APS 2 - Grava no arquivo TXT os dados de cada talhao recuperado do banco
         while (sqlite3_step(stmt) == SQLITE_ROW) {
 
             fprintf(arquivo, "Codigo: %d\n",
@@ -512,6 +543,7 @@ void exportarRelatorioTXT(sqlite3 *db)
 
     if (sqlite3_prepare_v2(db, sqlClima, -1, &stmt, NULL) == SQLITE_OK) {
 
+        //APS 2 - Grava no arquivo TXT os registros climaticos recuperados do banco
         while (sqlite3_step(stmt) == SQLITE_ROW) {
 
             fprintf(arquivo, "Talhao: %s\n",
@@ -555,6 +587,7 @@ void exportarRelatorioTXT(sqlite3 *db)
 
     if (sqlite3_prepare_v2(db, sqlPragas, -1, &stmt, NULL) == SQLITE_OK) {
 
+        //APS 2 - Grava no arquivo TXT as ocorrencias de pragas recuperadas do banco
         while (sqlite3_step(stmt) == SQLITE_ROW) {
 
             fprintf(arquivo, "Talhao: %s\n",
@@ -578,6 +611,7 @@ void exportarRelatorioTXT(sqlite3 *db)
         sqlite3_finalize(stmt);
     }
 
+    //APS 2 - Fecha o arquivo TXT apos finalizar toda a escrita do relatorio
     fclose(arquivo);
 
     printf("\nRelatorio exportado com sucesso!\n");

@@ -1,3 +1,4 @@
+//Modulo responsavel pelos submenus do sistema e pelo direcionamento das opcoes escolhidas pelo usuario para as funcoes de cada modulo
 #include <stdio.h>
 #include <stdlib.h>
 #include <sqlite3.h>
@@ -27,14 +28,17 @@
 
         printf("\nEscolha uma opcao: ");
 
+        //Valida se a opcao digitada pelo usuario e um numero inteiro
         if (scanf("%d", &opcao) != 1) {
             printf("\nDigite somente numeros.\n");
 
+            //Limpa os caracteres restantes da entrada invalida
             while (getchar() != '\n');
 
             continue;
         }
 
+        //Direciona a opcao escolhida para a funcao correspondente do modulo de talhoes
         switch(opcao) {
 
             case 1:
@@ -86,14 +90,17 @@ void menuPragas(sqlite3 *db) {
 
         printf("\nEscolha uma opcao: ");
 
+        //Valida se a opcao digitada pelo usuario e um numero inteiro
         if (scanf("%d", &opcao) != 1) {
             printf("\nDigite somente numeros.\n");
 
+            //Limpa os caracteres restantes da entrada invalida
             while (getchar() != '\n');
 
             continue;
         }
 
+        //Direciona a opcao escolhida para as funcoes de cadastro e gerenciamento de pragas e ocorrencias
         switch(opcao) {
 
             case 1:
@@ -158,14 +165,17 @@ void menuClima(sqlite3 *db) {
 
         printf("\nEscolha uma opcao: ");
 
+        //Valida se a opcao digitada pelo usuario e um numero inteiro
         if (scanf("%d", &opcao) != 1) {
             printf("\nDigite somente numeros.\n");
 
+            //Limpa os caracteres restantes da entrada invalida
             while (getchar() != '\n');
 
             continue;
         }
 
+        //Direciona a opcao escolhida para a funcao correspondente do modulo de clima
         switch(opcao) {
 
             case 1:
@@ -218,14 +228,17 @@ void menuRelatorios(sqlite3 *db) {
 
         printf("\nEscolha uma opcao: ");
 
+        //Valida se a opcao digitada pelo usuario e um numero inteiro
         if (scanf("%d", &opcao) != 1) {
             printf("\nDigite somente numeros.\n");
 
+            //Limpa os caracteres restantes da entrada invalida
             while (getchar() != '\n');
 
             continue;
         }
 
+        //Direciona a opcao escolhida para a geracao, exportacao ou leitura dos relatorios
         switch(opcao) {
 
             case 1:
@@ -280,14 +293,17 @@ void menuHistorico(sqlite3 *db)
 
         printf("\nEscolha uma opcao: ");
 
+        //Valida se a opcao digitada pelo usuario e um numero inteiro
         if (scanf("%d", &opcao) != 1) {
             printf("\nDigite somente numeros.\n");
 
+            //Limpa os caracteres restantes da entrada invalida
             while (getchar() != '\n');
 
             continue;
         }
 
+        //Direciona a opcao escolhida para as diferentes consultas do historico
         switch(opcao) {
 
             case 1:

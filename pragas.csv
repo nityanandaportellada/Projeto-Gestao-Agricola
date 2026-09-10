@@ -1,0 +1,11 @@
+Codigo;Nome;Descricao;Nivel Risco
+1;Bicheira-da-raiz;Ataca principalmente as ra°zes, pode causar reduá∆o do desenvolvimento da planta;4
+2;Lagarta-da-folha;Alimenta-se das folhas, pode causar desfolhamento;4
+3;Lagarta-do-Cartucho;Ataca Folhas e estruturas da Planta;3
+4;Percevejo-do-colmo;Ataca o colmo do arroz, pode provocar o chamado "coraá∆o morto" ou danos Ös pan°culas.;4
+5;Percevejo-das-pan°culas;Ataca os gr∆os, pode reduzir a qualidade e o rendimento;4
+6;Pulg‰es;Sugam a seiva da planta, podem causar enfraquecimento e deformaá‰es.;2
+7;Cigarra;Sugam Seivas e transmitem doencas;2
+8;Acaro;Dano a folhas e reducao do vigor;1
+9;Lesma e Caracois;Podem atacar plantas jovens, principalmente em determinadas condiá‰es de umidade.;1
+10;Broca-do-Colmo;As larvas penetram no colmo, podem provocar secamento e quebra das plantas.;4

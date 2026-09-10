@@ -1,3 +1,4 @@
+//Modulo responsavel pela visualizacao grafica dos talhoes da fazenda utilizando Raylib e pela representacao visual dos seus niveis de risco
 #include <stdio.h>
 #include <string.h>
 #include <sqlite3.h>
@@ -9,6 +10,7 @@
 //Calcula o risco atual de um talhao para a visualizacao
 int calcularRiscoVisualizacao(sqlite3 *db, int codigoTalhao)
 {
+    //Os fatores de risco iniciam em 1 para representar o menor valor quando nao existirem dados correspondentes
     int riscoTemperatura = 1;
     int riscoUmidade = 1;
     int riscoPraga = 1;
@@ -19,6 +21,7 @@ int calcularRiscoVisualizacao(sqlite3 *db, int codigoTalhao)
 
     sqlite3_stmt *stmt;
 
+    //Busca o registro climatico mais recente do talhao utilizando o maior id cadastrado
     const char *sqlClima =
         "SELECT temperatura, umidade "
         "FROM clima "
@@ -30,6 +33,7 @@ int calcularRiscoVisualizacao(sqlite3 *db, int codigoTalhao)
 
         sqlite3_bind_int(stmt, 1, codigoTalhao);
 
+        //Calcula os fatores de risco de temperatura e umidade quando existirem dados climaticos para o talhao
         if (sqlite3_step(stmt) == SQLITE_ROW) {
 
             temperatura = sqlite3_column_double(stmt, 0);
@@ -42,6 +46,7 @@ int calcularRiscoVisualizacao(sqlite3 *db, int codigoTalhao)
         sqlite3_finalize(stmt);
     }
 
+    //Busca o maior nivel de risco das pragas registradas na data de ocorrencia mais recente do talhao
     const char *sqlPraga =
         "SELECT MAX(p.nivel_risco) "
         "FROM ocorrencias_pragas o "
@@ -61,11 +66,13 @@ int calcularRiscoVisualizacao(sqlite3 *db, int codigoTalhao)
 
     if (sqlite3_prepare_v2(db, sqlPraga, -1, &stmt, NULL) == SQLITE_OK) {
 
+        //Associa o mesmo codigo de talhao aos dois parametros utilizados pela consulta
         sqlite3_bind_int(stmt, 1, codigoTalhao);
         sqlite3_bind_int(stmt, 2, codigoTalhao);
 
         if (sqlite3_step(stmt) == SQLITE_ROW) {
 
+            //Mantem o risco de praga igual a 1 quando nenhuma ocorrencia for encontrada
             if (sqlite3_column_type(stmt, 0) != SQLITE_NULL) {
                 riscoPraga = sqlite3_column_int(stmt, 0);
             }
@@ -74,6 +81,7 @@ int calcularRiscoVisualizacao(sqlite3 *db, int codigoTalhao)
         sqlite3_finalize(stmt);
     }
 
+    //Calcula o risco final multiplicando os fatores de temperatura, umidade e praga
     riscoFinal = riscoTemperatura * riscoUmidade * riscoPraga;
 
     return riscoFinal;
@@ -120,6 +128,7 @@ void visualizarFazenda(sqlite3 *db)
 
     int quantidade = 0;
 
+    //Consulta quantos talhoes existem para definir se a visualizacao pode ser aberta
     const char *sqlQuantidade =
         "SELECT COUNT(*) FROM talhoes;";
 
@@ -134,19 +143,23 @@ void visualizarFazenda(sqlite3 *db)
 
     sqlite3_finalize(stmt);
 
+    //Impede a abertura da janela grafica quando nenhum talhao estiver cadastrado
     if (quantidade == 0) {
         printf("\nNenhum talhao cadastrado.\n");
         printf("Cadastre um talhao antes de visualizar a fazenda.\n");
         return;
     }
 
+    //Define as dimensoes da janela utilizada pela visualizacao da fazenda
     const int larguraTela = 1200;
     const int alturaTela = 750;
 
     InitWindow(larguraTela, alturaTela, "Visualizacao da Fazenda");
 
+    //Limita a atualizacao da janela grafica a 60 quadros por segundo
     SetTargetFPS(60);
 
+    //Mantem a janela em execucao ate que o usuario solicite seu fechamento
     while (!WindowShouldClose()) {
 
         BeginDrawing();
@@ -162,6 +175,7 @@ void visualizarFazenda(sqlite3 *db)
 
         int colunas;
 
+        //Define dinamicamente a quantidade de colunas de acordo com o numero total de talhoes cadastrados
         if (quantidade <= 4) {
             colunas = 2;
         }
@@ -172,6 +186,7 @@ void visualizarFazenda(sqlite3 *db)
             colunas = 4;
         }
 
+        //Calcula a quantidade necessaria de linhas para distribuir todos os talhoes na tela
         int linhas = (quantidade + colunas - 1) / colunas;
 
         int margemX = 30;
@@ -179,21 +194,26 @@ void visualizarFazenda(sqlite3 *db)
         int margemInferior = 45;
         int espaco = 15;
 
+        //Calcula o espaco horizontal disponivel para distribuir os blocos dos talhoes
         int larguraDisponivel =
             larguraTela - (margemX * 2);
 
+        //Calcula o espaco vertical disponivel descontando titulo, legenda e margem inferior
         int alturaDisponivel =
             alturaTela - inicioY - margemInferior;
 
+        //Calcula automaticamente a largura de cada bloco conforme a quantidade de colunas
         int largura =
             (larguraDisponivel - ((colunas - 1) * espaco)) / colunas;
 
+        //Calcula automaticamente a altura de cada bloco conforme a quantidade de linhas
         int altura =
             (alturaDisponivel - ((linhas - 1) * espaco)) / linhas;
 
         int tamanhoFonte = 16;
         int tamanhoTitulo = 20;
 
+        //Reduz o tamanho das fontes quando a quantidade de linhas aumenta para manter as informacoes dentro dos blocos
         if (linhas >= 4) {
             tamanhoFonte = 13;
             tamanhoTitulo = 17;
@@ -204,6 +224,7 @@ void visualizarFazenda(sqlite3 *db)
             tamanhoTitulo = 15;
         }
 
+        //Consulta os dados necessarios para representar cada talhao na visualizacao
         const char *sql =
             "SELECT codigo, nome, area, plantacao, localizacao "
             "FROM talhoes "
@@ -211,6 +232,7 @@ void visualizarFazenda(sqlite3 *db)
 
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
 
+            //Controla a posicao sequencial de cada talhao dentro da grade da visualizacao
             int posicao = 0;
 
             while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -229,21 +251,27 @@ void visualizarFazenda(sqlite3 *db)
                 const char *localizacao =
                     (const char *)sqlite3_column_text(stmt, 4);
 
+                //Calcula em qual coluna e linha da grade o talhao atual sera exibido
                 int coluna = posicao % colunas;
                 int linha = posicao / colunas;
 
+                //Calcula a coordenada horizontal do bloco a partir da coluna
                 int x =
                     margemX + coluna * (largura + espaco);
 
+                //Calcula a coordenada vertical do bloco a partir da linha
                 int y =
                     inicioY + linha * (altura + espaco);
 
+                //Calcula o risco atual do talhao antes de definir sua representacao visual
                 int risco =
                     calcularRiscoVisualizacao(db, codigo);
 
+                //Converte o nivel de risco calculado na cor correspondente
                 Color cor =
                     definirCorRisco(risco);
 
+                //Desenha o fundo do bloco utilizando a cor correspondente ao risco com transparencia
                 DrawRectangle(
                     x,
                     y,
@@ -252,6 +280,7 @@ void visualizarFazenda(sqlite3 *db)
                     Fade(cor, 0.35f)
                 );
 
+                //Desenha o contorno do bloco que representa o talhao
                 DrawRectangleLines(
                     x,
                     y,
@@ -265,6 +294,7 @@ void visualizarFazenda(sqlite3 *db)
                 int textoX = x + 12;
                 int textoY = y + 10;
 
+                //Monta e exibe o codigo do talhao dentro do bloco
                 sprintf(texto, "Talhao %d", codigo);
                 DrawText(
                     texto,
@@ -276,6 +306,7 @@ void visualizarFazenda(sqlite3 *db)
 
                 textoY += tamanhoTitulo + 8;
 
+                //Monta e exibe o nome do talhao
                 sprintf(texto, "Nome: %s", nome);
                 DrawText(
                     texto,
@@ -287,6 +318,7 @@ void visualizarFazenda(sqlite3 *db)
 
                 textoY += tamanhoFonte + 7;
 
+                //Monta e exibe o tipo de plantacao existente no talhao
                 sprintf(texto, "Plantacao: %s", plantacao);
                 DrawText(
                     texto,
@@ -298,6 +330,7 @@ void visualizarFazenda(sqlite3 *db)
 
                 textoY += tamanhoFonte + 7;
 
+                //Monta e exibe a area cadastrada para o talhao
                 sprintf(texto, "Area: %.2f ha", area);
                 DrawText(
                     texto,
@@ -309,6 +342,7 @@ void visualizarFazenda(sqlite3 *db)
 
                 textoY += tamanhoFonte + 7;
 
+                //Monta e exibe a localizacao cadastrada para o talhao
                 sprintf(texto, "Local: %s", localizacao);
                 DrawText(
                     texto,
@@ -320,6 +354,7 @@ void visualizarFazenda(sqlite3 *db)
 
                 textoY += tamanhoFonte + 7;
 
+                //Monta o texto contendo a classificacao e o valor numerico do risco calculado
                 sprintf(
                     texto,
                     "Risco: %s (%d)",
@@ -335,6 +370,7 @@ void visualizarFazenda(sqlite3 *db)
                     BLACK
                 );
 
+                //Avanca a posicao utilizada para calcular o proximo bloco da grade
                 posicao++;
             }
 
@@ -352,5 +388,6 @@ void visualizarFazenda(sqlite3 *db)
         EndDrawing();
     }
 
+    //Fecha a janela grafica e libera os recursos utilizados pela Raylib
     CloseWindow();
 }

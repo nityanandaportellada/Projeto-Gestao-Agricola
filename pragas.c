@@ -1,3 +1,4 @@
+//Modulo responsavel pelo cadastro, consulta, edicao e exclusao de pragas e de suas ocorrencias nos talhoes
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +13,7 @@ void listarPragas(sqlite3 *db)
 {
     sqlite3_stmt *stmt;
 
+    //Seleciona os dados das pragas cadastradas e organiza os resultados pelo codigo
     const char *sql =
         "SELECT codigo, nome, descricao, nivel_risco "
         "FROM pragas "
@@ -27,8 +29,10 @@ void listarPragas(sqlite3 *db)
     printf("          PRAGAS CADASTRADAS\n");
     printf("====================================\n");
 
+    //Controla se pelo menos uma praga foi encontrada durante a consulta
     int encontrou = 0;
 
+    //Percorre todas as pragas retornadas pela consulta
     while (sqlite3_step(stmt) == SQLITE_ROW) {
 
         encontrou = 1;
@@ -71,6 +75,7 @@ void cadastrarPraga(sqlite3 *db)
 
         printf("Digite o codigo da praga: ");
         scanf("%19s", entrada);
+        //Percorre cada caractere digitado para garantir que o codigo contenha somente numeros
         for (int i = 0; entrada[i] != '\0'; i++) {
             if (entrada[i] < '0' || entrada[i] > '9') {
                 valido = 0;
@@ -84,6 +89,7 @@ void cadastrarPraga(sqlite3 *db)
 
     } while (!valido);
 
+    //Converte o codigo validado de texto para numero inteiro
     codigo = atoi(entrada);
 
     //Verifica se o codigo cadastrado ja existe
@@ -133,6 +139,7 @@ void cadastrarPraga(sqlite3 *db)
         return;
     }
 
+    //Associa os dados da nova praga aos parametros do comando SQL preparado
     sqlite3_bind_int(stmt, 1, codigo);
     sqlite3_bind_text(
         stmt,
@@ -152,6 +159,7 @@ void cadastrarPraga(sqlite3 *db)
 
     sqlite3_bind_int(stmt, 4, nivelRisco);
 
+    //Executa a inclusao da praga no banco de dados
     if (sqlite3_step(stmt) == SQLITE_DONE) {
         printf("\nPraga cadastrada com sucesso!\n");
 
@@ -170,6 +178,7 @@ int buscarPraga(sqlite3 *db, int codigo)
 {
     sqlite3_stmt *stmt;
 
+    //Consulta a existencia de uma praga utilizando seu codigo como criterio
     const char *sql =
         "SELECT codigo "
         "FROM pragas "
@@ -181,11 +190,13 @@ int buscarPraga(sqlite3 *db, int codigo)
 
     sqlite3_bind_int(stmt, 1, codigo);
 
+    //Retorna 1 quando o codigo da praga for encontrado
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         sqlite3_finalize(stmt);
         return 1;
     }
 
+    //Retorna -1 quando nenhuma praga com o codigo informado for encontrada
     sqlite3_finalize(stmt);
     return -1;
 }
@@ -207,6 +218,7 @@ void cadastrarOcorrencia(sqlite3 *db)
     printf("       CADASTRO DE OCORRENCIA\n");
     printf("====================================\n");
 
+    //Consulta a quantidade de pragas existentes antes de permitir o cadastro de uma ocorrencia
     const char *sqlQuantidadePragas =
         "SELECT COUNT(*) FROM pragas;";
 
@@ -221,12 +233,14 @@ void cadastrarOcorrencia(sqlite3 *db)
 
     sqlite3_finalize(stmt);
 
+    //Impede o cadastro de ocorrencias quando nenhuma praga estiver cadastrada
     if (quantidadePragas == 0) {
         printf("\nNenhuma praga cadastrada.\n");
         printf("Cadastre uma praga antes de registrar uma ocorrencia.\n");
         return;
     }
 
+    //Consulta a quantidade de talhoes existentes antes de permitir o cadastro de uma ocorrencia
     const char *sqlQuantidadeTalhoes =
         "SELECT COUNT(*) FROM talhoes;";
 
@@ -241,6 +255,7 @@ void cadastrarOcorrencia(sqlite3 *db)
 
     sqlite3_finalize(stmt);
 
+    //Impede o cadastro de ocorrencias quando nenhum talhao estiver cadastrado
     if (quantidadeTalhoes == 0) {
         printf("\nNenhum talhao cadastrado.\n");
         printf("Cadastre um talhao antes de registrar uma ocorrencia.\n");
@@ -256,6 +271,7 @@ void cadastrarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Verifica se o codigo da ocorrencia ja existe antes de continuar o cadastro
     if (buscarOcorrencia(db, ocorrencia.codigo) == 1) {
         printf("\nJa existe uma ocorrencia com este codigo.\n");
         return;
@@ -270,6 +286,7 @@ void cadastrarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Verifica se a praga informada existe antes de vincula-la a ocorrencia
     if (buscarPraga(db, ocorrencia.codigoPraga) == -1) {
         printf("\nPraga nao encontrada.\n");
         return;
@@ -284,11 +301,13 @@ void cadastrarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Verifica se o talhao informado existe antes de vincula-lo a ocorrencia
     if (buscarTalhao(db, ocorrencia.codigoTalhao) == -1) {
         printf("\nTalhao nao encontrado.\n");
         return;
     }
 
+    //Consulta a area total do talhao para validar posteriormente a area afetada pela praga
     const char *sqlArea =
         "SELECT area "
         "FROM talhoes "
@@ -317,6 +336,7 @@ void cadastrarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Valida se o nivel de infestacao esta dentro da escala definida entre 1 e 5
     if (ocorrencia.nivelInfestacao < 1 || ocorrencia.nivelInfestacao > 5) {
         printf("\nNivel de infestacao invalido.\n");
         return;
@@ -331,11 +351,13 @@ void cadastrarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Impede o cadastro de uma area afetada com valor negativo
     if (ocorrencia.areaAfetada < 0) {
         printf("\nArea afetada invalida.\n");
         return;
     }
 
+    //Impede que a area afetada seja maior que a area total cadastrada para o talhao
     if (ocorrencia.areaAfetada > areaTalhao) {
         printf("\nArea afetada nao pode ser maior que a area do talhao.\n");
         printf("Area total do talhao: %.2f hectares\n", areaTalhao);
@@ -349,12 +371,14 @@ void cadastrarOcorrencia(sqlite3 *db)
 
     ocorrencia.data[strcspn(ocorrencia.data, "\n")] = '\0';
 
+    //Utiliza a funcao de validacao de data antes de gravar a ocorrencia
     if (!validarData(ocorrencia.data)) {
         printf("\nData invalida.\n");
         printf("Utilize o formato DD/MM/AAAA.\n");
         return;
     }
 
+    //Prepara o comando SQL para inserir a ocorrencia e seus relacionamentos com a praga e o talhao
     const char *sql =
         "INSERT INTO ocorrencias_pragas "
         "(codigo, codigo_praga, codigo_talhao, nivel_infestacao, area_afetada, data) "
@@ -365,6 +389,7 @@ void cadastrarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Associa os dados da ocorrencia aos parametros utilizados pelo comando SQL
     sqlite3_bind_int(stmt, 1, ocorrencia.codigo);
     sqlite3_bind_int(stmt, 2, ocorrencia.codigoPraga);
     sqlite3_bind_int(stmt, 3, ocorrencia.codigoTalhao);
@@ -388,6 +413,7 @@ void listarOcorrencias(sqlite3 *db)
 {
     sqlite3_stmt *stmt;
 
+    //Relaciona as ocorrencias com as tabelas de pragas e talhoes para apresentar os dados completos de cada registro
     const char *sql =
         "SELECT o.codigo, "
         "o.codigo_praga, "
@@ -413,8 +439,10 @@ void listarOcorrencias(sqlite3 *db)
     printf("        OCORRENCIAS DE PRAGAS\n");
     printf("====================================\n");
 
+    //Controla se pelo menos uma ocorrencia foi encontrada
     int encontrou = 0;
 
+    //Percorre e apresenta todas as ocorrencias retornadas pela consulta
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         encontrou = 1;
 
@@ -443,6 +471,7 @@ int buscarOcorrencia(sqlite3 *db, int codigo)
 {
     sqlite3_stmt *stmt;
 
+    //Consulta a existencia de uma ocorrencia utilizando seu codigo
     const char *sql =
         "SELECT codigo "
         "FROM ocorrencias_pragas "
@@ -454,6 +483,7 @@ int buscarOcorrencia(sqlite3 *db, int codigo)
 
     sqlite3_bind_int(stmt, 1, codigo);
 
+    //Retorna 1 quando a ocorrencia for encontrada
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         sqlite3_finalize(stmt);
         return 1;
@@ -461,6 +491,7 @@ int buscarOcorrencia(sqlite3 *db, int codigo)
 
     sqlite3_finalize(stmt);
 
+    //Retorna -1 quando nenhuma ocorrencia possuir o codigo informado
     return -1;
 }
 
@@ -487,6 +518,7 @@ void editarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Confirma a existencia da ocorrencia antes de permitir a edicao
     if (buscarOcorrencia(db, ocorrencia.codigo) == -1) {
         printf("\nOcorrencia nao encontrada.\n");
         return;
@@ -501,6 +533,7 @@ void editarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Confirma que a nova praga informada existe
     if (buscarPraga(db, ocorrencia.codigoPraga) == -1) {
         printf("\nPraga nao encontrada.\n");
         return;
@@ -514,11 +547,13 @@ void editarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Confirma que o novo talhao informado existe
     if (buscarTalhao(db, ocorrencia.codigoTalhao) == -1) {
         printf("\nTalhao nao encontrado.\n");
         return;
     }
 
+    //Consulta a area do novo talhao para validar a area afetada informada
     const char *sqlArea =
         "SELECT area "
         "FROM talhoes "
@@ -545,6 +580,7 @@ void editarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Valida se o novo nivel de infestacao permanece dentro da escala permitida
     if (ocorrencia.nivelInfestacao < 1 || ocorrencia.nivelInfestacao > 5) {
         printf("\nNivel de infestacao invalido.\n");
         return;
@@ -558,11 +594,13 @@ void editarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Impede a utilizacao de uma area afetada negativa
     if (ocorrencia.areaAfetada < 0) {
         printf("\nArea afetada invalida.\n");
         return;
     }
 
+    //Impede que a nova area afetada ultrapasse a area total do talhao
     if (ocorrencia.areaAfetada > areaTalhao) {
         printf("\nArea afetada nao pode ser maior que a area do talhao.\n");
         printf("Area total do talhao: %.2f hectares\n", areaTalhao);
@@ -576,12 +614,14 @@ void editarOcorrencia(sqlite3 *db)
 
     ocorrencia.data[strcspn(ocorrencia.data, "\n")] = '\0';
 
+    //Valida o formato e os valores da nova data informada
     if (!validarData(ocorrencia.data)) {
         printf("\nData invalida.\n");
         printf("Utilize o formato DD/MM/AAAA.\n");
         return;
     }
 
+    //Prepara o comando SQL que atualiza os dados da ocorrencia selecionada
     const char *sql =
         "UPDATE ocorrencias_pragas "
         "SET codigo_praga = ?, "
@@ -596,6 +636,7 @@ void editarOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Associa os novos valores e o codigo da ocorrencia aos parametros do comando UPDATE
     sqlite3_bind_int(stmt, 1, ocorrencia.codigoPraga);
     sqlite3_bind_int(stmt, 2, ocorrencia.codigoTalhao);
     sqlite3_bind_int(stmt, 3, ocorrencia.nivelInfestacao);
@@ -633,11 +674,13 @@ void excluirOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Confirma que a ocorrencia existe antes de solicitar sua exclusao
     if (buscarOcorrencia(db, codigo) == -1) {
         printf("\nOcorrencia nao encontrada.\n");
         return;
     }
 
+    //Solicita confirmacao do usuario antes de remover definitivamente a ocorrencia
     printf("Deseja realmente excluir esta ocorrencia? (S/N): ");
     scanf(" %c", &confirmacao);
 
@@ -646,6 +689,7 @@ void excluirOcorrencia(sqlite3 *db)
         return;
     }
 
+    //Prepara o comando para excluir a ocorrencia correspondente ao codigo informado
     const char *sql =
         "DELETE FROM ocorrencias_pragas "
         "WHERE codigo = ?;";
@@ -669,6 +713,7 @@ void excluirOcorrencia(sqlite3 *db)
     sqlite3_finalize(stmt);
 }
 
+//Edita os dados de uma praga ja cadastrada utilizando seu codigo
 void editarPraga(sqlite3 *db)
 {
     int codigo;
@@ -691,6 +736,7 @@ void editarPraga(sqlite3 *db)
 
     getchar();
 
+    //Confirma que a praga existe antes de permitir a alteracao dos seus dados
     if (buscarPraga(db, codigo) == -1) {
         printf("Praga nao encontrada.\n");
         return;
@@ -704,6 +750,7 @@ void editarPraga(sqlite3 *db)
     fgets(descricao, sizeof(descricao), stdin);
     descricao[strcspn(descricao, "\n")] = '\0';
 
+    //Repete a leitura ate que seja informado um nivel de risco valido entre 1 e 4
     do {
         printf("Digite o novo nivel de risco (1 a 4): ");
 
@@ -722,6 +769,7 @@ void editarPraga(sqlite3 *db)
     
     while (nivelRisco < 1 || nivelRisco > 4);
 
+    //Prepara o comando SQL para atualizar nome, descricao e nivel de risco da praga
     const char *sql =
         "UPDATE pragas "
         "SET nome = ?, descricao = ?, nivel_risco = ? "
@@ -732,6 +780,7 @@ void editarPraga(sqlite3 *db)
         return;
     }
 
+    //Associa os novos dados e o codigo da praga aos parametros do comando UPDATE
     sqlite3_bind_text(stmt, 1, nome, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, descricao, -1, SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt, 3, nivelRisco);
@@ -746,6 +795,7 @@ void editarPraga(sqlite3 *db)
     sqlite3_finalize(stmt);
 }
 
+//Exclui uma praga cadastrada utilizando seu codigo
 void excluirPraga(sqlite3 *db)
 {
     int codigo;
@@ -764,11 +814,13 @@ void excluirPraga(sqlite3 *db)
         return;
     }
 
+    //Confirma que a praga existe antes de solicitar sua exclusao
     if (buscarPraga(db, codigo) == -1) {
         printf("Praga nao encontrada.\n");
         return;
     }
 
+    //Solicita confirmacao do usuario antes de excluir definitivamente a praga
     printf("Deseja realmente excluir esta praga? (S/N): ");
     scanf(" %c", &confirmacao);
 
@@ -777,6 +829,7 @@ void excluirPraga(sqlite3 *db)
         return;
     }
 
+    //Prepara o comando SQL para excluir a praga correspondente ao codigo informado
     const char *sql =
         "DELETE FROM pragas "
         "WHERE codigo = ?;";
@@ -788,6 +841,7 @@ void excluirPraga(sqlite3 *db)
 
     sqlite3_bind_int(stmt, 1, codigo);
 
+    //A exclusao pode ser impedida caso existam ocorrencias vinculadas a praga por meio da chave estrangeira
     if (sqlite3_step(stmt) == SQLITE_DONE) {
         printf("Praga excluida com sucesso.\n");
     } else {
